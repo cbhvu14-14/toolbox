@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2B4EFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ארגז הכלים">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ארגז הכלים</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@600;700&display=swap">
+<style>
+  :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+<style>
+  /* Layout: one phone-width column, three tools behind a segmented switcher, cards stacked inside each tool. */
+  :root {
+    --bg: #F2F3F9;
+    --surface: #FFFFFF;
+    --surface2: #E6E9F5;
+    --fg: #14172B;
+    --muted: #565C80;
+    --line: #D3D8EC;
+    --accent: #2B4EFF;
+    --on-accent: #FFFFFF;
+    --gold: #FFC53D;
+    --gold2: #F0A91B;
+    --on-gold: #2A2000;
+    --good: #0E8A4F;
+    --font-display: "Rubik", system-ui, "Arial Hebrew", Arial, sans-serif;
+    --font-body: "Heebo", system-ui, "Arial Hebrew", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1122; --surface: #181C33; --surface2: #222742; --fg: #ECEFFB; --muted: #9AA1C7;
+      --line: #2C3252; --accent: #7C94FF; --on-accent: #0B1030; --gold: #FFCF5C; --gold2: #E8A93A;
+      --on-gold: #2A2000; --good: #4FD08A; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1122; --surface: #181C33; --surface2: #222742; --fg: #ECEFFB; --muted: #9AA1C7;
+    --line: #2C3252; --accent: #7C94FF; --on-accent: #0B1030; --gold: #FFCF5C; --gold2: #E8A93A;
+    --on-gold: #2A2000; --good: #4FD08A; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+    direction: rtl;
+    padding-block: 20px 44px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .app { max-width: 460px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .top h1 { font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.1; margin: 0 0 4px; text-wrap: balance; }
+  .top p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; background: var(--surface2); border-radius: 16px; }
+  .tab { border: 0; background: transparent; color: var(--muted); font-weight: 700; font-size: 15px; min-height: 48px; padding: 8px 2px; border-radius: 12px; }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 4px rgba(0,0,0,.14); }
+
+  .panel { display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .label { font-size: 13px; font-weight: 700; letter-spacing: .04em; color: var(--muted); margin: 0; }
+  .btn { border: 0; background: var(--accent); color: var(--on-accent); font-family: var(--font-display); font-weight: 700; font-size: 18px; min-height: 56px; padding: 0 28px; border-radius: 16px; width: 100%; box-shadow: 0 4px 0 rgba(0,0,0,.22); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.22); }
+  .btn[disabled] { opacity: .6; cursor: default; }
+  .btn.ghost { background: var(--surface2); color: var(--fg); font-family: var(--font-body); font-size: 15px; min-height: 44px; padding: 0 16px; width: auto; box-shadow: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost:active { transform: none; }
+
+  .seg { display: inline-grid; grid-auto-flow: column; gap: 4px; padding: 4px; background: var(--surface2); border-radius: 12px; max-width: 100%; }
+  .seg button { border: 0; background: transparent; color: var(--muted); min-width: 40px; min-height: 42px; padding: 0 12px; border-radius: 9px; font-weight: 700; font-size: 15px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+  .seg.ltr { direction: ltr; }
+
+  .field { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border-radius: 12px; padding: 4px; direction: ltr; }
+  .stepper button { width: 44px; height: 44px; border: 0; background: var(--surface); border-radius: 9px; font-size: 22px; font-weight: 700; line-height: 1; }
+  .stepper output { min-width: 42px; text-align: center; font-family: var(--font-display); font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .status { min-height: 22px; margin: 0; font-size: 14px; color: var(--muted); text-align: center; }
+  .result { font-family: var(--font-display); font-weight: 700; font-size: 26px; margin: 0; min-height: 36px; text-align: center; white-space: pre-line; }
+
+  /* Dice */
+  .dice { display: flex; flex-wrap: wrap; gap: 18px 14px; justify-content: center; padding: 8px 0 14px; direction: ltr; --ds: 84px; min-height: 110px; }
+  .dice.small { --ds: 68px; }
+  .die { position: relative; width: var(--ds); height: var(--ds); padding: 0; border: 0; background: none; }
+  .die.d6 { background: var(--surface); border: 2px solid var(--fg); border-radius: 18px; padding: calc(var(--ds) * .14); display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); place-items: center; box-shadow: 0 4px 0 var(--line); }
+  .die.d6 span { width: calc(var(--ds) * .17); height: calc(var(--ds) * .17); border-radius: 50%; }
+  .die.d6 .pip { background: var(--fg); }
+  .die svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .shape { fill: var(--accent); stroke: var(--fg); stroke-width: 2.5; stroke-linejoin: round; }
+  .die text { fill: var(--on-accent); font-family: var(--font-display); font-weight: 700; }
+  .die.locked.d6 { border-color: var(--gold2); box-shadow: 0 0 0 4px var(--gold); }
+  .die.locked .shape { stroke: var(--gold); stroke-width: 6; }
+  .die.locked::after { content: "נעול"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--on-gold); font: 700 11px/1 var(--font-body); padding: 4px 8px; border-radius: 999px; }
+  .dice.shake .die:not(.locked) { animation: wob .15s infinite alternate; }
+  .dice.shake .die:not(.locked):nth-child(even) { animation-delay: -.075s; }
+  @keyframes wob { from { transform: rotate(-9deg) translateY(2px); } to { transform: rotate(9deg) translateY(-4px); } }
+  .sum { font-family: var(--font-display); font-weight: 700; font-size: 44px; line-height: 1; margin: 0; min-height: 44px; font-variant-numeric: tabular-nums; }
+  .brk { margin: 0; color: var(--muted); font-size: 15px; min-height: 22px; direction: ltr; text-align: center; font-variant-numeric: tabular-nums; }
+  .note { margin: 0; min-height: 24px; font-weight: 700; color: var(--good); text-align: center; }
+  .hhead { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .hlist { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .hrow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; direction: ltr; padding: 8px 10px; background: var(--surface2); border-radius: 10px; font-variant-numeric: tabular-nums; }
+  .hrow .hl { font-weight: 700; font-size: 14px; }
+  .hrow .hv { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+  .hrow .ht { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+  .empty { margin: 0; color: var(--muted); font-size: 14px; text-align: center; }
+  .link { border: 0; background: none; color: var(--accent); font-weight: 700; font-size: 14px; padding: 8px; min-height: 40px; }
+
+  /* Coin */
+  .stage { position: relative; width: 150px; height: 190px; display: grid; place-items: end center; }
+  .hop { position: absolute; top: 40px; left: 15px; width: 120px; height: 120px; }
+  .coin-wrap { width: 120px; height: 120px; perspective: 700px; }
+  .coin { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .95s cubic-bezier(.2,.7,.2,1); }
+  .face { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 32px; color: var(--on-gold); backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 5px solid var(--gold2); }
+  .face::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; border: 2px dashed var(--gold2); opacity: .9; }
+  .face.h { background: radial-gradient(circle at 32% 28%, var(--gold) 0 38%, var(--gold2) 130%); }
+  .face.t { background: radial-gradient(circle at 68% 28%, var(--gold) 0 38%, var(--gold2) 130%); transform: rotateY(180deg); }
+  .shadow { width: 96px; height: 14px; border-radius: 50%; background: #000; opacity: .3; filter: blur(5px); margin-bottom: 4px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 28px; width: 100%; }
+  .dotc { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .dotc.h { background: var(--gold); color: var(--on-gold); }
+  .dotc.t { background: var(--surface2); color: var(--fg); border: 2px solid var(--gold2); }
+
+  /* Who starts */
+  .pick-area { position: relative; height: min(52vh, 400px); min-height: 250px; background: var(--surface); border: 2px dashed var(--line); border-radius: 22px; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; display: grid; place-items: center; padding: 16px; }
+  .prog { position: absolute; top: 0; left: 0; right: 0; height: 7px; background: var(--accent); transform: scaleX(0); transform-origin: right center; }
+  .pick-hint { margin: 0; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 20px; color: var(--muted); pointer-events: none; text-wrap: balance; }
+  .pick-hint.big { font-size: 96px; line-height: 1; font-weight: 700; color: var(--fg); opacity: .85; font-variant-numeric: tabular-nums; }
+  .dot { position: absolute; width: 84px; height: 84px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 34px; color: #10122A; box-shadow: 0 0 0 6px rgba(255,255,255,.35); transition: transform .25s, opacity .25s; }
+  .dot.win { transform: translate(-50%, -50%) scale(1.7); box-shadow: 0 0 0 10px var(--gold); z-index: 2; }
+  .dot.lose { opacity: .18; transform: translate(-50%, -50%) scale(.7); }
+  .dot.first { box-shadow: 0 0 0 8px var(--gold); }
+  .dot.ta { background: var(--accent); color: var(--on-accent); }
+  .dot.tb { background: var(--gold); color: var(--on-gold); }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+  /* Install sheet */
+  .sheet { position: fixed; inset: 0; z-index: 60; background: rgba(8,10,24,.55); display: flex; align-items: flex-end; justify-content: center; }
+  .sheet-card { width: 100%; max-width: 520px; background: var(--surface); color: var(--fg); border-radius: 22px 22px 0 0; padding-top: 20px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 14px; max-height: 88vh; overflow-y: auto; }
+  .sheet-card h2 { font-family: var(--font-display); font-size: 22px; margin: 0; }
+  .sheet-card ol { margin: 0; padding-inline-start: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .sheet-card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .coin { transition: none; }
+    .dice.shake .die:not(.locked) { animation: none; }
+    .dot { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" lang="he" dir="rtl">
+  <header class="top">
+    <div>
+      <h1>ארגז הכלים</h1>
+      <p>קוביות, מטבע והגרלות</p>
+    </div>
+    <button class="btn ghost" id="installBtn" type="button" aria-haspopup="dialog">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+      התקנה
+    </button>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="כלים">
+    <button class="tab" role="tab" data-tab="dice" id="t-dice" aria-selected="true">קוביות</button>
+    <button class="tab" role="tab" data-tab="coin" id="t-coin" aria-selected="false">מטבע</button>
+    <button class="tab" role="tab" data-tab="pick" id="t-pick" aria-selected="false">מי מתחיל</button>
+  </div>
+
+  <!-- Dice -->
+  <section class="panel" id="p-dice" role="tabpanel" aria-labelledby="t-dice">
+    <div class="card">
+      <div class="seg ltr" id="dType" role="group" aria-label="סוג קובייה">
+        <button data-t="4">D4</button><button data-t="6">D6</button><button data-t="8">D8</button>
+        <button data-t="10">D10</button><button data-t="12">D12</button><button data-t="20">D20</button>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <p class="label">כמות</p>
+          <div class="stepper"><button id="cMinus" aria-label="פחות קוביות">−</button><output id="cVal">2</output><button id="cPlus" aria-label="עוד קוביות">+</button></div>
+        </div>
+        <div class="field">
+          <p class="label">תוספת</p>
+          <div class="stepper"><button id="mMinus" aria-label="הפחת תוספת">−</button><output id="mVal">0</output><button id="mPlus" aria-label="הוסף תוספת">+</button></div>
+        </div>
+      </div>
+      <div class="dice" id="dice" aria-live="polite"></div>
+      <p class="sum" id="sum"></p>
+      <p class="brk" id="brk"></p>
+      <p class="note" id="note" aria-live="polite"></p>
+      <button class="btn" id="rollBtn" type="button">הטלה</button>
+      <p class="status">נגיעה בקובייה נועלת אותה להטלה הבאה</p>
+      <button class="link" id="soundBtn" type="button" aria-pressed="false">צליל: כבוי</button>
+    </div>
+    <div class="card">
+      <div class="hhead"><p class="label">הטלות אחרונות</p><button class="link" id="histClear" type="button">נקה</button></div>
+      <div class="hlist" id="hist"></div>
+    </div>
+  </section>
+
+  <!-- Coin -->
+  <section class="panel" id="p-coin" role="tabpanel" aria-labelledby="t-coin" hidden>
+    <div class="card">
+      <div class="seg" id="cMode" role="group" aria-label="מצב">
+        <button data-m="simple">פשוט</button><button data-m="guess">ניחוש</button><button data-m="series">סדרה</button>
+      </div>
+      <div class="seg" id="guessBox" role="group" aria-label="הניחוש שלך" hidden>
+        <button data-g="h">אני מנחש עץ</button><button data-g="t">אני מנחש פלי</button>
+      </div>
+      <div class="seg" id="seriesBox" role="group" aria-label="אורך הסדרה" hidden>
+        <button data-s="2">ראשון ל־2</button><button data-s="3">ראשון ל־3</button><button data-s="4">ראשון ל־4</button>
+      </div>
+      <div class="stage">
+        <div class="hop" id="hop"><div class="coin-wrap"><div class="coin" id="coin"><div class="face h">עץ</div><div class="face t">פלי</div></div></div></div>
+        <div class="shadow" id="shadow"></div>
+      </div>
+      <p class="result" id="cRes" aria-live="polite"></p>
+      <p class="status" id="cMsg" aria-live="polite"></p>
+      <button class="btn" id="flipBtn" type="button">הטלת מטבע</button>
+      <p class="status" id="cStat">עץ 0 · פלי 0</p>
+      <div class="strip" id="cStrip" aria-label="הטלות אחרונות"></div>
+    </div>
+  </section>
+
+  <!-- Who starts -->
+  <section class="panel" id="p-pick" role="tabpanel" aria-labelledby="t-pick" hidden>
+    <div class="pick-area" id="pickArea">
+      <div class="prog" id="pickProg"></div>
+      <p class="pick-hint" id="pickHint">כל אחד שם אצבע על המסך ומחזיק</p>
+    </div>
+    <div class="card">
+      <div class="controls">
+        <div class="field"><p class="label">מה מגרילים</p>
+          <div class="seg" id="pMode" role="group" aria-label="סוג הגרלה">
+            <button data-p="one">מי מתחיל</button><button data-p="order">סדר</button><button data-p="teams">קבוצות</button>
+          </div>
+        </div>
+        <div class="field"><p class="label">זמן החזקה</p>
+          <div class="seg" id="pHold" role="group" aria-label="זמן החזקה">
+            <button data-h="1500">מהיר</button><button data-h="2500">רגיל</button><button data-h="4000">איטי</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="label">בלי מגע מרובה? הגרלה לפי מספר משתתפים</p>
+      <div class="stepper"><button id="nMinus" aria-label="פחות משתתפים">−</button><output id="nVal">4</output><button id="nPlus" aria-label="עוד משתתפים">+</button></div>
+      <button class="btn" id="pickNumBtn" type="button">הגרל</button>
+      <p class="result" id="pickNumRes" aria-live="polite"></p>
+    </div>
+  </section>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-card">
+    <h2 id="sheetTitle">התקנה בטלפון</h2>
+    <div class="seg" id="osSeg" role="group" aria-label="מערכת הפעלה">
+      <button data-os="ios">אייפון</button><button data-os="android">אנדרואיד</button>
+    </div>
+    <ol id="osSteps"></ol>
+    <p>האפליקציה תופיע במסך הבית ותיפתח במסך מלא, בלי סרגל הדפדפן.</p>
+    <button class="btn" id="sheetClose" type="button">הבנתי</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  let reduce = false;
+  try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  const rf = () => { try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; } catch (e) { return Math.random(); } };
+  const rint = n => Math.floor(rf() * n);
+  const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = rint(i + 1); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const vib = ms => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+
+  /* ---------- State ---------- */
+  const KEY = 'toolbox.v2';
+  const S = { type: 6, count: 2, mod: 0, sound: false, hist: [], pmode: 'one', hold: 2500, n: 4 };
+  try { const raw = localStorage.getItem(KEY); if (raw) Object.assign(S, JSON.parse(raw)); } catch (e) {}
+  if ([4, 6, 8, 10, 12, 20].indexOf(S.type) < 0) S.type = 6;
+  S.count = Math.min(6, Math.max(1, Number(S.count) || 2));
+  S.mod = Math.min(20, Math.max(-20, Number(S.mod) || 0));
+  S.n = Math.min(12, Math.max(2, Number(S.n) || 4));
+  if (!Array.isArray(S.hist)) S.hist = [];
+  S.hist = S.hist.filter(h => h && Array.isArray(h.v)).slice(0, 8);
+  if (['one', 'order', 'teams'].indexOf(S.pmode) < 0) S.pmode = 'one';
+  if ([1500, 2500, 4000].indexOf(Number(S.hold)) < 0) S.hold = 2500;
+  S.hold = Number(S.hold);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  function seg(box, attr, cur, cb) {
+    const btns = [...box.querySelectorAll('button')];
+    const mark = v => btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset[attr] === String(v))));
+    mark(cur);
+    box.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b || !box.contains(b)) return;
+      mark(b.dataset[attr]);
+      cb(b.dataset[attr]);
+    });
+    return mark;
+  }
+
+  /* ---------- Tabs ---------- */
+  const tabs = [...document.querySelectorAll('.tab')];
+  const panels = { dice: $('#p-dice'), coin: $('#p-coin'), pick: $('#p-pick') };
+  function show(name) {
+    if (!panels[name]) name = 'dice';
+    Object.keys(panels).forEach(k => { panels[k].hidden = k !== name; });
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+  }
+  tabs.forEach(t => t.addEventListener('click', () => { try { location.hash = t.dataset.tab; } catch (e) {} show(t.dataset.tab); }));
+  window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+
+  /* ---------- Sound ---------- */
+  let ac = null;
+  function ensureAudio() {
+    if (!S.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) { ac = null; }
+  }
+  function beep(freq, dur, vol) {
+    if (!S.sound || !ac) return;
+    try {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+      o.type = 'triangle'; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t); o.stop(t + dur);
+    } catch (e) {}
+  }
+  const soundBtn = $('#soundBtn');
+  function paintSound() { soundBtn.textContent = 'צליל: ' + (S.sound ? 'דלוק' : 'כבוי'); soundBtn.setAttribute('aria-pressed', String(S.sound)); }
+  soundBtn.addEventListener('click', () => { S.sound = !S.sound; paintSound(); save(); ensureAudio(); beep(660, .08, .05); });
+  paintSound();
+
+  /* ---------- Dice ---------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+  const SHAPES = { 4: '50,8 94,86 6,86', 8: '50,4 94,50 50,96 6,50', 10: '50,4 92,40 50,96 8,40', 12: '50,6 94,38 77,90 23,90 6,38', 20: '50,4 92,27 92,73 50,96 8,73 8,27' };
+  const diceBox = $('#dice'), sumEl = $('#sum'), brkEl = $('#brk'), noteEl = $('#note'), rollBtn = $('#rollBtn');
+  let vals = [], locks = [], rolling = false;
+
+  function fit(fresh) {
+    if (fresh) { vals = []; locks = []; }
+    while (vals.length < S.count) { vals.push(rint(S.type) + 1); locks.push(false); }
+    vals.length = S.count; locks.length = S.count;
+  }
+  function buildDie(i) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'die d' + S.type; b.dataset.i = i;
+    if (S.type === 6) {
+      for (let k = 0; k < 9; k++) b.appendChild(document.createElement('span'));
+    } else {
+      const s = document.createElementNS(NS, 'svg');
+      s.setAttribute('viewBox', '0 0 100 100'); s.setAttribute('aria-hidden', 'true');
+      const p = document.createElementNS(NS, 'polygon');
+      p.setAttribute('points', SHAPES[S.type]); p.setAttribute('class', 'shape');
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', '50'); t.setAttribute('y', S.type === 4 ? '72' : '62'); t.setAttribute('text-anchor', 'middle');
+      s.appendChild(p); s.appendChild(t); b.appendChild(s);
+    }
+    return b;
+  }
+  function paint(i) {
+    const b = diceBox.children[i]; if (!b) return;
+    const v = vals[i];
+    if (S.type === 6) {
+      [...b.children].forEach((c, k) => { c.className = PIPS[v].indexOf(k) >= 0 ? 'pip' : ''; });
+    } else {
+      const t = b.querySelector('text');
+      t.textContent = String(v); t.setAttribute('font-size', v >= 10 ? '32' : '38');
+    }
+    b.classList.toggle('locked', !!locks[i]);
+    b.setAttribute('aria-pressed', String(!!locks[i]));
+    b.setAttribute('aria-label', 'קובייה ' + (i + 1) + ': ' + v + (locks[i] ? ', נעולה' : ''));
+  }
+  function build() {
+    diceBox.textContent = '';
+    for (let i = 0; i < S.count; i++) diceBox.appendChild(buildDie(i));
+    diceBox.classList.toggle('small', S.count > 4);
+    for (let i = 0; i < S.count; i++) paint(i);
+  }
+  const sign = m => (m > 0 ? '+' + m : m < 0 ? '−' + Math.abs(m) : '');
+  function paintControls() {
+    $('#cVal').textContent = S.count;
+    $('#mVal').textContent = S.mod > 0 ? '+' + S.mod : S.mod < 0 ? '−' + Math.abs(S.mod) : '0';
+  }
+  function clearResult() { sumEl.textContent = ''; brkEl.textContent = ''; noteEl.textContent = ''; }
+
+  const markType = seg($('#dType'), 't', S.type, v => { S.type = Number(v); save(); fit(true); build(); clearResult(); });
+  $('#cMinus').addEventListener('click', () => { if (rolling) return; S.count = Math.max(1, S.count - 1); save(); fit(); build(); paintControls(); clearResult(); });
+  $('#cPlus').addEventListener('click', () => { if (rolling) return; S.count = Math.min(6, S.count + 1); save(); fit(); build(); paintControls(); clearResult(); });
+  $('#mMinus').addEventListener('click', () => { S.mod = Math.max(-20, S.mod - 1); save(); paintControls(); });
+  $('#mPlus').addEventListener('click', () => { S.mod = Math.min(20, S.mod + 1); save(); paintControls(); });
+  diceBox.addEventListener('click', e => {
+    const b = e.target.closest('.die');
+    if (!b || rolling) return;
+    const i = Number(b.dataset.i);
+    locks[i] = !locks[i];
+    paint(i);
+  });
+
+  function finishRoll() {
+    diceBox.classList.remove('shake');
+    rolling = false; rollBtn.disabled = false;
+    const raw = vals.reduce((a, b) => a + b, 0), total = raw + S.mod;
+    sumEl.textContent = String(total);
+    brkEl.textContent = vals.join(' + ') + (S.mod ? ' ' + (S.mod > 0 ? '+' : '−') + ' ' + Math.abs(S.mod) : '');
+    noteEl.textContent = '';
+    if (S.type === 20 && S.count === 1) {
+      if (vals[0] === 20) noteEl.textContent = '20! הטלה מושלמת';
+      else if (vals[0] === 1) noteEl.textContent = '1… אפשר לנסות שוב';
+    } else if (S.count > 1 && vals.every(v => v === S.type)) noteEl.textContent = 'כולן מקסימום!';
+    S.hist.unshift({ t: S.type, n: S.count, m: S.mod, v: vals.slice(), total });
+    S.hist = S.hist.slice(0, 8);
+    save(); renderHist(); vib(40);
+  }
+  function roll() {
+    if (rolling) return;
+    ensureAudio();
+    const free = [];
+    locks.forEach((l, i) => { if (!l) free.push(i); });
+    if (!free.length) { noteEl.textContent = 'כל הקוביות נעולות'; return; }
+    rolling = true; rollBtn.disabled = true; noteEl.textContent = '';
+    const finals = vals.slice();
+    free.forEach(i => { finals[i] = rint(S.type) + 1; });
+    const stop = {};
+    free.forEach((i, k) => { stop[i] = reduce ? 0 : 520 + k * 130; });
+    diceBox.classList.add('shake');
+    const t0 = Date.now();
+    (function frame() {
+      const el = Date.now() - t0;
+      let all = true;
+      free.forEach(i => {
+        if (el < stop[i]) { vals[i] = rint(S.type) + 1; all = false; }
+        else if (vals[i] !== finals[i]) { vals[i] = finals[i]; beep(480 + i * 70, .09, .05); }
+        paint(i);
+      });
+      if (all) { free.forEach(i => { vals[i] = finals[i]; paint(i); }); finishRoll(); }
+      else setTimeout(frame, 75);
+    })();
+  }
+  rollBtn.addEventListener('click', roll);
+
+  const histEl = $('#hist');
+  function renderHist() {
+    histEl.textContent = '';
+    if (!S.hist.length) {
+      const p = document.createElement('p'); p.className = 'empty';
+      p.textContent = 'עוד לא הטלת. ההטלות יופיעו כאן.';
+      histEl.appendChild(p); return;
+    }
+    S.hist.forEach(h => {
+      const r = document.createElement('div'); r.className = 'hrow';
+      const l = document.createElement('span'); l.className = 'hl'; l.textContent = h.n + 'D' + h.t + sign(h.m);
+      const v = document.createElement('span'); v.className = 'hv'; v.textContent = h.v.join(', ');
+      const t = document.createElement('span'); t.className = 'ht'; t.textContent = String(h.total);
+      r.appendChild(l); r.appendChild(v); r.appendChild(t); histEl.appendChild(r);
+    });
+  }
+  $('#histClear').addEventListener('click', () => { S.hist = []; save(); renderHist(); });
+  fit(); build(); paintControls(); renderHist();
+
+  /* ---------- Coin ---------- */
+  const coin = $('#coin'), hop = $('#hop'), shadow = $('#shadow'), cRes = $('#cRes'), cMsg = $('#cMsg'), flipBtn = $('#flipBtn'), cStat = $('#cStat'), cStrip = $('#cStrip');
+  let cmode = 'simple', guess = null, target = 3, rot = 0, flipping = false, streak = { s: null, n: 0 };
+  const T = { h: 0, t: 0 }, G = { ok: 0, tot: 0 }, SR = { h: 0, t: 0, done: false }, cHist = [];
+  const NAME = { h: 'עץ', t: 'פלי' };
+
+  function paintStat() {
+    if (cmode === 'guess') cStat.textContent = 'צדקת ' + G.ok + ' מתוך ' + G.tot;
+    else if (cmode === 'series') cStat.textContent = 'עץ ' + SR.h + ' · פלי ' + SR.t + ' · ראשון ל־' + target;
+    else cStat.textContent = 'עץ ' + T.h + ' · פלי ' + T.t;
+  }
+  function paintStrip() {
+    cStrip.textContent = '';
+    cHist.forEach(s => {
+      const d = document.createElement('span'); d.className = 'dotc ' + s;
+      d.textContent = s === 'h' ? 'ע' : 'פ'; d.title = NAME[s];
+      cStrip.appendChild(d);
+    });
+  }
+  const markGuess = seg($('#guessBox'), 'g', '', v => { guess = v; cMsg.textContent = ''; });
+  seg($('#seriesBox'), 's', target, v => { target = Number(v); SR.h = 0; SR.t = 0; SR.done = false; cRes.textContent = ''; cMsg.textContent = ''; paintStat(); });
+  seg($('#cMode'), 'm', cmode, v => {
+    cmode = v; guess = null; markGuess('');
+    $('#guessBox').hidden = v !== 'guess'; $('#seriesBox').hidden = v !== 'series';
+    cRes.textContent = ''; cMsg.textContent = ''; streak = { s: null, n: 0 };
+    paintStat();
+  });
+
+  function land(heads) {
+    const side = heads ? 'h' : 't', other = heads ? 't' : 'h';
+    cRes.textContent = NAME[side];
+    T[side]++;
+    streak = streak.s === side ? { s: side, n: streak.n + 1 } : { s: side, n: 1 };
+    cHist.unshift(side); if (cHist.length > 20) cHist.pop();
+    if (cmode === 'guess') {
+      G.tot++;
+      const ok = guess === side;
+      if (ok) G.ok++;
+      cMsg.textContent = ok ? 'צדקת!' : 'לא הפעם';
+    } else if (cmode === 'series') {
+      SR[side]++;
+      if (SR[side] >= target) { SR.done = true; cMsg.textContent = NAME[side] + ' ניצח בסדרה ' + SR[side] + '–' + SR[other]; }
+      else cMsg.textContent = 'הסדרה נמשכת';
+    } else if (streak.n >= 2) {
+      cMsg.textContent = NAME[side] + ' ' + streak.n + ' פעמים ברצף';
+    }
+    paintStat(); paintStrip(); vib(40);
+    flipping = false; flipBtn.disabled = false;
+  }
+  flipBtn.addEventListener('click', () => {
+    if (flipping) return;
+    if (cmode === 'guess' && !guess) { cMsg.textContent = 'בחרו קודם עץ או פלי'; return; }
+    if (cmode === 'series' && SR.done) { SR.h = 0; SR.t = 0; SR.done = false; }
+    flipping = true; flipBtn.disabled = true; cRes.textContent = ''; cMsg.textContent = '';
+    const heads = rf() < 0.5;
+    rot = Math.ceil(rot / 360) * 360 + 1080 + (heads ? 0 : 180);
+    coin.style.transform = 'rotateY(' + rot + 'deg)';
+    if (!reduce) {
+      try {
+        hop.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-96px)', offset: .45 }, { transform: 'translateY(0)' }], { duration: 950, easing: 'cubic-bezier(.3,.6,.4,1)' });
+        shadow.animate([{ transform: 'scale(1)', opacity: .3 }, { transform: 'scale(.55)', opacity: .12, offset: .45 }, { transform: 'scale(1)', opacity: .3 }], { duration: 950 });
+      } catch (e) {}
+    }
+    setTimeout(() => land(heads), reduce ? 0 : 1000);
+  });
+  paintStat();
+
+  /* ---------- Who starts ---------- */
+  const area = $('#pickArea'), hint = $('#pickHint'), prog = $('#pickProg');
+  const IDLE = 'כל אחד שם אצבע על המסך ומחזיק';
+  let pts = new Map(), done = false, deadline = 0, tick = null, colorIdx = 0;
+  const setHint = (t, big) => { hint.textContent = t; hint.classList.toggle('big', !!big); };
+  function clearTick() { if (tick) { clearInterval(tick); tick = null; } prog.style.transform = 'scaleX(0)'; }
+  function resetAll() {
+    clearTick();
+    area.querySelectorAll('.dot').forEach(d => d.remove());
+    pts = new Map(); done = false; setHint(IDLE, false);
+  }
+  function place(dot, e) {
+    const r = area.getBoundingClientRect();
+    dot.style.left = (e.clientX - r.left) + 'px';
+    dot.style.top = (e.clientY - r.top) + 'px';
+  }
+  function finish() {
+    clearTick();
+    const dots = [...pts.values()];
+    if (dots.length < 2) return;
+    done = true;
+    if (S.pmode === 'one') {
+      const w = dots[rint(dots.length)];
+      dots.forEach(d => d.classList.add(d === w ? 'win' : 'lose'));
+      setHint('נבחר! מתחילים מכאן', false);
+    } else if (S.pmode === 'order') {
+      shuffle(dots).forEach((d, i) => { d.textContent = String(i + 1); if (i === 0) d.classList.add('first'); });
+      setHint('זה הסדר', false);
+    } else {
+      const sh = shuffle(dots), half = Math.ceil(sh.length / 2);
+      sh.forEach((d, i) => { d.style.background = ''; d.classList.add(i < half ? 'ta' : 'tb'); d.textContent = i < half ? 'א' : 'ב'; });
+      setHint('קבוצה א׳ וקבוצה ב׳', false);
+    }
+    vib(120);
+  }
+  function arm() {
+    clearTick();
+    const n = pts.size;
+    if (n === 0) { setHint(IDLE, false); return; }
+    if (n === 1) { setHint('עוד מישהו צריך להצטרף', false); return; }
+    deadline = Date.now() + S.hold;
+    setHint(String(Math.ceil(S.hold / 1000)), true);
+    tick = setInterval(() => {
+      const left = deadline - Date.now();
+      if (left <= 0) { finish(); return; }
+      prog.style.transform = 'scaleX(' + (1 - left / S.hold) + ')';
+      setHint(String(Math.ceil(left / 1000)), true);
+    }, 60);
+  }
+  area.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    if (done) resetAll();
+    if (pts.size >= 10 || pts.has(e.pointerId)) return;
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.background = 'hsl(' + ((colorIdx++ * 57 + 210) % 360) + ' 80% 58%)';
+    place(dot, e);
+    area.appendChild(dot);
+    pts.set(e.pointerId, dot);
+    try { area.setPointerCapture(e.pointerId); } catch (err) {}
+    arm();
+  });
+  area.addEventListener('pointermove', e => { const d = pts.get(e.pointerId); if (d && !done) place(d, e); });
+  const release = e => {
+    const d = pts.get(e.pointerId);
+    if (!d || done) return;
+    d.remove(); pts.delete(e.pointerId); arm();
+  };
+  area.addEventListener('pointerup', release);
+  area.addEventListener('pointercancel', release);
+  area.addEventListener('contextmenu', e => e.preventDefault());
+
+  seg($('#pMode'), 'p', S.pmode, v => { S.pmode = v; save(); resetAll(); });
+  seg($('#pHold'), 'h', S.hold, v => { S.hold = Number(v); save(); });
+
+  const nVal = $('#nVal');
+  const paintN = () => { nVal.textContent = S.n; };
+  $('#nMinus').addEventListener('click', () => { S.n = Math.max(2, S.n - 1); save(); paintN(); });
+  $('#nPlus').addEventListener('click', () => { S.n = Math.min(12, S.n + 1); save(); paintN(); });
+  paintN();
+  $('#pickNumBtn').addEventListener('click', () => {
+    const ids = shuffle(Array.from({ length: S.n }, (_, i) => i + 1));
+    const out = $('#pickNumRes');
+    if (S.pmode === 'one') out.textContent = 'מספר ' + ids[0] + ' מתחיל';
+    else if (S.pmode === 'order') out.textContent = 'הסדר: ' + ids.join(', ');
+    else {
+      const half = Math.ceil(ids.length / 2);
+      const a = ids.slice(0, half).sort((x, y) => x - y), b = ids.slice(half).sort((x, y) => x - y);
+      out.textContent = 'קבוצה א׳: ' + a.join(', ') + '\nקבוצה ב׳: ' + b.join(', ');
+    }
+    vib(40);
+  });
+
+  /* ---------- Install ---------- */
+  const installBtn = $('#installBtn'), sheet = $('#sheet'), steps = $('#osSteps');
+  let deferred = null, os = /iphone|ipad|ipod/i.test(navigator.userAgent || '') ? 'ios' : 'android';
+  const STEPS = {
+    ios: ['פתחו את האתר ב־Safari.', 'לחצו על כפתור השיתוף (ריבוע עם חץ למעלה).', 'גללו ובחרו "הוספה למסך הבית".', 'לחצו "הוספה".'],
+    android: ['פתחו את האתר ב־Chrome.', 'לחצו על שלוש הנקודות בפינה העליונה.', 'בחרו "התקנת אפליקציה" או "הוספה למסך הבית".', 'אשרו בחלון שנפתח.']
+  };
+  function paintSteps() {
+    steps.textContent = '';
+    STEPS[os].forEach(t => { const li = document.createElement('li'); li.textContent = t; steps.appendChild(li); });
+  }
+  const markOs = seg($('#osSeg'), 'os', os, v => { os = v; paintSteps(); });
+  paintSteps();
+  try {
+    if ((matchMedia('(display-mode: standalone)').matches) || navigator.standalone) installBtn.hidden = true;
+  } catch (e) {}
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
+  let lastFocus = null;
+  function openSheet() { lastFocus = document.activeElement; sheet.hidden = false; $('#sheetClose').focus(); }
+  function closeSheet() { sheet.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  installBtn.addEventListener('click', () => {
+    if (deferred) { const d = deferred; deferred = null; try { d.prompt(); } catch (e) { openSheet(); } }
+    else openSheet();
+  });
+  $('#sheetClose').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', e => { if (e.target === sheet) closeSheet(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  }
+})();
+</script>
+</body>
+</html>
